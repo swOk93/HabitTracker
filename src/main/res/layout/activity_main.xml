@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Заголовок приложения -->
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Habit Tracker"
+        android:textSize="24sp"
+        android:textColor="#000"/>
+
+    <!-- Кнопка для добавления новой привычки -->
+    <Button
+        android:id="@+id/buttonAddHabit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Habit"
+        android:layout_marginTop="16dp"/>
+
+    <!-- RecyclerView для отображения списка привычек -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>
+
