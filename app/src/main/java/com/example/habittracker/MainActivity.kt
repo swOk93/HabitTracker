@@ -6,12 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.content.Intent
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,8 +20,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.ui.theme.HabitTrackerTheme
 
 class MainActivity : ComponentActivity() {
-    // Переменная для хранения списка привычек
-    private val habits = mutableListOf<Habit>()
+    // Получаем ViewModel с использованием делегата viewModels()
+    private val habitViewModel: HabitViewModel by viewModels()
+
+    // Регистрация Activity Result Launcher для получения результата от HabitDetailActivity
+    private val addHabitLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.getStringExtra("HABIT_NAME")?.let { habitName ->
+                habitViewModel.addHabit(Habit(habitName))
+            }
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,16 +39,29 @@ class MainActivity : ComponentActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView) // Находим RecyclerView в разметке
         recyclerView.layoutManager = LinearLayoutManager(this) // Устанавливаем LayoutManager для RecyclerView
 
-        val adapter = HabitAdapter(habits)
+        val adapter = HabitAdapter(emptyList()) // Создаем адаптер и передаем список привычек
         recyclerView.adapter = adapter // Устанавливаем адаптер для RecyclerView
+
+        // Наблюдаем за изменениями в списке привычек
+        habitViewModel.habits.observe(this, Observer { habits ->
+            // Обновляем адаптер при изменении данных
+            adapter.updateHabits(habits)
+        })
 
         // Находим кнопку для добавления привычек
         val buttonAddHabit: Button = findViewById(R.id.buttonAddHabit)
         buttonAddHabit.setOnClickListener {
-            // Добавляем новую привычку при нажатии на кнопку
-            habits.add(Habit("New Habit"))
-            adapter.notifyItemInserted(habits.size - 1) // Уведомляем адаптер о новом элементе
+            val intent = Intent(this, HabitDetailActivity::class.java)
+            addHabitLauncher.launch(intent)
         }
+//        buttonAddHabit.setOnClickListener {
+//            // Открываем HabitDetailActivity для добавления новой привычки
+//            val intent = Intent(this, HabitDetailActivity::class.java)
+//            startActivity(intent)
+//            // Добавляем новую привычку через ViewModel
+////            habitViewModel.addHabit(Habit("New Habit"))
+////            adapter.notifyItemInserted(habits.size - 1) // Уведомляем адаптер о новом элементе
+//        }
 
 
 //        enableEdgeToEdge()
@@ -82,7 +104,7 @@ class MainActivity : ComponentActivity() {
 data class Habit(val name: String)
 
 // Адаптер для RecyclerView
-class HabitAdapter(private val habitList: List<Habit>) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
+class HabitAdapter(private var habitList: List<Habit>) : RecyclerView.Adapter<HabitAdapter.HabitViewHolder>() {
 
     // ViewHolder для привычек
     class HabitViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -92,7 +114,11 @@ class HabitAdapter(private val habitList: List<Habit>) : RecyclerView.Adapter<Ha
     // Создаем ViewHolder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HabitViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.habit_item, parent, false) // Инфлейтим разметку элемента списка
+            // Инфлейтим разметку элемента списка (процесс преобразования XML-разметки в объекты View)
+            // Когда вы создаете пользовательский интерфейс в XML-файле, этот файл является просто описанием.
+            // Чтобы использовать его в коде, его нужно преобразовать (или "инфлейтить") в фактические объекты
+            // View, которые можно отображать на экране и с которыми можно взаимодействовать.
+            .inflate(R.layout.habit_item, parent, false)
         return HabitViewHolder(view) // Возвращаем новый ViewHolder
     }
 
@@ -104,6 +130,13 @@ class HabitAdapter(private val habitList: List<Habit>) : RecyclerView.Adapter<Ha
 
     // Возвращаем количество элементов в списке
     override fun getItemCount() = habitList.size
+
+
+    // Метод для обновления списка привычек
+    fun updateHabits(newHabits: List<Habit>) {
+        habitList = newHabits
+        notifyDataSetChanged() // Уведомляем адаптер об изменениях в данных
+    }
 }
 
 @Composable
