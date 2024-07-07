@@ -17,4 +17,8 @@ class HabitViewModel : ViewModel() {
         _habits.value?.add(habit)
         _habits.value = _habits.value // Обновляем LiveData
     }
+    fun updateHabit(position: Int, newHabit: Habit) {
+        _habits.value?.set(position, newHabit)
+        _habits.value = _habits.value
+    }
 }
